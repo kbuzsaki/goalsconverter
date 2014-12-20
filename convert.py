@@ -122,20 +122,27 @@ CSV_FILENAME = "goals.csv"
 JSON_FILENAME = "goal-list.json"
 
 if __name__ == "__main__":
-    # load the csv if it's not present
-    if not os.path.exists(CSV_FILENAME) or ALWAYS_DOWNLOAD:
-        print("loading goals csv from google docs")
-        data = urlopen(DOWNLOAD_URL).read().decode('utf-8')
-        with open(CSV_FILENAME, "w") as goalsCsv:
-            goalsCsv.write(data)
-        print("goals csv loaded and saved to \"" + CSV_FILENAME + "\"")
-    else:
-        print("using existing \"" + CSV_FILENAME + "\"")
+    try:
+        # load the csv if it's not present
+        if not os.path.exists(CSV_FILENAME) or ALWAYS_DOWNLOAD:
+            print("loading goals csv from google docs")
+            data = urlopen(DOWNLOAD_URL).read().decode('utf-8')
+            with open(CSV_FILENAME, "w") as goalsCsv:
+                goalsCsv.write(data)
+            print("goals csv loaded and saved to \"" + CSV_FILENAME + "\"")
+        else:
+            print("using existing \"" + CSV_FILENAME + "\"")
 
-    # convert the csv to json
-    print("converting \"" + CSV_FILENAME + "\" to \"" + JSON_FILENAME + "\"")
-    csvToJson(CSV_FILENAME, JSON_FILENAME)
+        # convert the csv to json
+        print("converting \"" + CSV_FILENAME + "\" to \"" + JSON_FILENAME + "\"")
+        csvToJson(CSV_FILENAME, JSON_FILENAME)
+    except Exception as e:
+        print("oops, looks like there was an error:")
+        traceback.print_exc()
+        print("depending on what happened, the output files may be corrupted")
+    finally:
+        input("press enter to close...")
 
-        
+            
 
 
