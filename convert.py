@@ -3,6 +3,7 @@ import json
 import csv
 from urllib.request import urlopen
 import os
+import traceback
 
 def rowToDict(header, csvRow):
     goal = dict()
