@@ -54,9 +54,11 @@ def csvToJson(csvFilename, jsonFilename):
     goalRows = list(reader)
 
     jsonDict = rowsListToDict(headerRow, goalRows)
+    jsonStr = json.dumps(jsonDict, sort_keys = True, indent = 4)
 
-    json.dump(jsonDict, open(jsonFilename, "w", encoding="utf-8"), sort_keys = True, indent = 4)
-
+    outputStr = "var bingoList = " + jsonStr
+    with open(jsonFilename, "w", encoding="utf-8") as jsonFile:
+        jsonFile.write(outputStr)
 
 
 def dictToRow(difficulty, goal, typesList):
@@ -121,7 +123,7 @@ BASE_URL = "https://docs.google.com/spreadsheet/ccc"
 DOWNLOAD_URL = BASE_URL + "?key=1dRpwfIV2vDRL_Hq-pBj3U7wq7XwZ9JPW9Ac8hK5qbgc&output=csv"
 
 CSV_FILENAME = "goals.csv"
-JSON_FILENAME = "goal-list.json"
+JSON_FILENAME = "goal-list.js"
 
 if __name__ == "__main__":
     try:
