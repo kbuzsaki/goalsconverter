@@ -113,8 +113,9 @@ def jsonToCsv(jsonFilename, csvFilename):
         writer.writerow(row)
 
 
-# change this to True if you always want to redownload the csv
-ALWAYS_DOWNLOAD = False
+# set this to True if you always want to redownload the csv
+# set this to False if you want it to use the "goals.csv" file
+ALWAYS_DOWNLOAD = True
 
 BASE_URL = "https://docs.google.com/spreadsheet/ccc"
 DOWNLOAD_URL = BASE_URL + "?key=1dRpwfIV2vDRL_Hq-pBj3U7wq7XwZ9JPW9Ac8hK5qbgc&output=csv"
