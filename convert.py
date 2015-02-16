@@ -49,13 +49,13 @@ def rowsListToDict(headerRow, goalRows):
     return goals
 
 def csvToJson(csvFilename, jsonFilename):
-    reader = csv.reader(open(csvFilename))
+    reader = csv.reader(open(csvFilename, encoding="utf-8"))
     headerRow = next(reader)
     goalRows = list(reader)
 
     jsonDict = rowsListToDict(headerRow, goalRows)
 
-    json.dump(jsonDict, open(jsonFilename, "w"), sort_keys = True, indent = 4)
+    json.dump(jsonDict, open(jsonFilename, "w", encoding="utf-8"), sort_keys = True, indent = 4)
 
 
 
@@ -105,8 +105,8 @@ def dictToRowsList(goals):
 
 
 def jsonToCsv(jsonFilename, csvFilename):
-    jsonDict = json.load(open(jsonFilename))
-    writer = csv.writer(open(csvFilename, "w"))
+    jsonDict = json.load(open(jsonFilename, encoding="utf-8"))
+    writer = csv.writer(open(csvFilename, "w", encoding="utf-8"))
 
     rows = dictToRowsList(jsonDict)
     for row in rows:
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         if not os.path.exists(CSV_FILENAME) or ALWAYS_DOWNLOAD:
             print("loading goals csv from google docs")
             data = urlopen(DOWNLOAD_URL).read().decode('utf-8')
-            with open(CSV_FILENAME, "w") as goalsCsv:
+            with open(CSV_FILENAME, "w", encoding="utf-8") as goalsCsv:
                 goalsCsv.write(data)
             print("goals csv loaded and saved to \"" + CSV_FILENAME + "\"")
         else:
