@@ -6,20 +6,49 @@ import os
 import traceback
 
 
-IGNORE = object()
+class ValueColumn:
+
+    def __init__(self, name):
+        self.name = name
+
+    @property
+    def included(self):
+        return True
+
+class StringColumn(ValueColumn):
+
+    def parse_value(self, value):
+        return value
+
+class IntegerColumn(ValueColumn):
+
+    def parse_value(self, value):
+        return int(value)
+
+class Ignore:
+
+    def __init__(self, name):
+        self.name = name
+
+    @property
+    def included(self):
+        return False
 
 SCHEMA = [
-    "name",
-    "jp",
-    "difficulty",
-    "child",
+    StringColumn("name"),
+    StringColumn("jp"),
+    StringColumn("difficulty"),
+    StringColumn("child")
 ]
+
+def parse_goal(col_details):
+    return {col.name: col.parse_value(detail) for col, detail in col_details}
 
 def row_to_dict(synergy_header, row):
     detail_cols = row[:len(SCHEMA)]
     synergy_cols = row[len(SCHEMA):]
 
-    goal = {name: detail for name, detail in zip(SCHEMA, detail_cols) if name is not IGNORE}
+    goal = parse_goal([(col, detail) for col, detail in zip(SCHEMA, detail_cols) if col.included])
 
     types = dict()
     subtypes = dict()
@@ -36,7 +65,7 @@ def row_to_dict(synergy_header, row):
     if subtypes:
         goal["subtypes"] = subtypes
 
-    return difficulty, goal
+    return goal
 
 
 def rows_to_dict(header, rows):
