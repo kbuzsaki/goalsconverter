@@ -5,23 +5,23 @@ from urllib.request import urlopen
 import os
 import traceback
 
-def rowToDict(header, csvRow):
+def row_to_dict(header, row):
     goal = dict()
-    goal["name"] = csvRow[0]
-    goal["jp"] = csvRow[1]
-    difficulty = csvRow[2]
-    goal["child"] = csvRow[3]
+    goal["name"] = row[0]
+    goal["jp"] = row[1]
+    difficulty = row[2]
+    goal["child"] = row[3]
 
     types = dict()
     subtypes = dict()
-    for index, synergy in enumerate(csvRow[4:]):
+    for index, synergy in enumerate(row[4:]):
         if synergy != "":
-            typeName = header[index]
+            type_name = header[index]
             # a '*' denotes a subtype
             if synergy.startswith("*"):
-                subtypes[typeName] = float(synergy[1:])
+                subtypes[type_name] = float(synergy[1:])
             else:
-                types[typeName] = float(synergy)
+                types[type_name] = float(synergy)
 
     # all goals have types
     goal["types"] = types
@@ -32,85 +32,85 @@ def rowToDict(header, csvRow):
     return difficulty, goal
 
 
-def rowsListToDict(headerRow, goalRows):
-    header = headerRow[4:]
+def rows_to_dict(header, rows):
+    header = header[4:]
 
     goals = defaultdict(list)
     goals["info"] = {"version": "v9"}
 
-    for row in goalRows:
+    for row in rows:
         try:
             if row[0]:
-                difficulty, goal = rowToDict(header, row)
+                difficulty, goal = row_to_dict(header, row)
                 goals[difficulty].append(goal)
         except:
             print("exception encountered when processing row: " + str(row))
 
     return goals
 
-def csvToJson(csvFilename, jsonFilename):
-    reader = csv.reader(open(csvFilename, encoding="utf-8"))
-    headerRow = next(reader)
-    goalRows = list(reader)
+def csv_to_json(csv_filename, json_filename):
+    reader = csv.reader(open(csv_filename, encoding="utf-8"))
+    header = next(reader)
+    rows = list(reader)
 
-    jsonDict = rowsListToDict(headerRow, goalRows)
-    jsonStr = json.dumps(jsonDict, sort_keys = True, indent = 4)
+    json_dict = rows_to_dict(header, rows)
+    json_str = json.dumps(json_dict, sort_keys = True, indent = 4)
 
-    outputStr = "var bingoList = " + jsonStr
-    with open(jsonFilename, "w", encoding="utf-8") as jsonFile:
-        jsonFile.write(outputStr)
+    output = "var bingoList = " + json_str
+    with open(json_filename, "w", encoding="utf-8") as json_file:
+        json_file.write(output)
 
 
-def dictToRow(difficulty, goal, typesList):
-    def getSynergy(goal, typeName):
-        if typeName in goal["types"]:
-            return str(goal["types"][typeName])
-        elif "subtypes" in goal and typeName in goal["subtypes"]:
-            return "*" + str(goal["subtypes"][typeName])
+def dict_to_row(difficulty, goal, types):
+    def get_synergy(goal, type_name):
+        if type_name in goal["types"]:
+            return str(goal["types"][type_name])
+        elif "subtypes" in goal and type_name in goal["subtypes"]:
+            return "*" + str(goal["subtypes"][type_name])
         else:
             return ""
 
     info = [goal["name"], goal["jp"], difficulty, goal["child"]]
-    types = [getSynergy(goal, typeName) for typeName in typesList]
+    types = [get_synergy(goal, type_name) for type_name in types]
     return info + types
 
 # this is the order that gombill specified
 # eventually we should try to preserve the order in the file
-HEADER_ORDER = ['childzl', 'saria', 'zl', 'lightarrow', 'claimcheck', 'magic', 
-                'forest', 'quiver', 'pg', 'gtunic', 'dmc', 'fire', 'ice', 
-                'irons', 'water', 'longshot', 'hovers', 'shadow', 'fortress', 
-                'gerudo', 'gtg', 'spirit', 'deku', 'ganon', 'dc', 'kd', 'jabu', 
-                'lonlon', 'childchu', 'beans', 'songs', 'swords', 'botw', 'child2', 
-                'mapcompass', 'hearts', 'wallet', 'strength', 'bottle', 'bulletbag', 
+HEADER_ORDER = ['childzl', 'saria', 'zl', 'lightarrow', 'claimcheck', 'magic',
+                'forest', 'quiver', 'pg', 'gtunic', 'dmc', 'fire', 'ice',
+                'irons', 'water', 'longshot', 'hovers', 'shadow', 'fortress',
+                'gerudo', 'gtg', 'spirit', 'deku', 'ganon', 'dc', 'kd', 'jabu',
+                'lonlon', 'childchu', 'beans', 'songs', 'swords', 'botw', 'child2',
+                'mapcompass', 'hearts', 'wallet', 'strength', 'bottle', 'bulletbag',
                 'bombbag', 'nuts', 'shields', 'cow', 'skullkid', 'atrade', 'boots', 'tunics']
 
-def dictToRowsList(goals):
-    typesSet = set()
+def dict_to_rows(goals):
+    types = set()
     for key in goals:
         if key.isdigit():
             for goal in goals[key]:
-                typesSet.update(goal["types"].keys())
+                types.update(goal["types"].keys())
 
-    typesList = HEADER_ORDER
+    types = HEADER_ORDER
 
-    header = ["name", "jp", "difficulty", "child"] + typesList
+    header = ["name", "jp", "difficulty", "child"] + types
 
-    goalRows = []
+    rows = []
 
     for key in goals:
         if key.isdigit():
             difficulty = key
             for goal in goals[key]:
-                goalRows.append(dictToRow(difficulty, goal, typesList))
+                rows.append(dict_to_row(difficulty, goal, types))
 
-    return [header] + goalRows
+    return [header] + rows
 
 
-def jsonToCsv(jsonFilename, csvFilename):
-    jsonDict = json.load(open(jsonFilename, encoding="utf-8"))
-    writer = csv.writer(open(csvFilename, "w", encoding="utf-8"))
+def json_to_csv(json_filename, csv_filename):
+    json_dict = json.load(open(json_filename, encoding="utf-8"))
+    writer = csv.writer(open(csv_filename, "w", encoding="utf-8"))
 
-    rows = dictToRowsList(jsonDict)
+    rows = dict_to_rows(json_dict)
     for row in rows:
         writer.writerow(row)
 
@@ -131,15 +131,15 @@ if __name__ == "__main__":
         if not os.path.exists(CSV_FILENAME) or ALWAYS_DOWNLOAD:
             print("loading goals csv from google docs")
             data = urlopen(DOWNLOAD_URL).read().decode('utf-8')
-            with open(CSV_FILENAME, "w", encoding="utf-8") as goalsCsv:
-                goalsCsv.write(data)
+            with open(CSV_FILENAME, "w", encoding="utf-8") as goals_csv:
+                goals_csv.write(data)
             print("goals csv loaded and saved to \"" + CSV_FILENAME + "\"")
         else:
             print("using existing \"" + CSV_FILENAME + "\"")
 
         # convert the csv to json
         print("converting \"" + CSV_FILENAME + "\" to \"" + JSON_FILENAME + "\"")
-        csvToJson(CSV_FILENAME, JSON_FILENAME)
+        csv_to_json(CSV_FILENAME, JSON_FILENAME)
     except Exception as e:
         print("oops, looks like there was an error:")
         traceback.print_exc()
@@ -147,6 +147,6 @@ if __name__ == "__main__":
     finally:
         input("press enter to close...")
 
-            
+
 
 
