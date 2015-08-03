@@ -51,8 +51,9 @@ def rows_to_dict(header, rows):
                 goal = row_to_dict(synergy_header, row)
                 difficulty = goal.pop("difficulty")
                 goals[difficulty].append(goal)
-        except:
-            print("exception encountered when processing row: " + str(row))
+        except Exception as e:
+            print("Exception occured when processing row:", row)
+            raise e
 
     return goals
 
