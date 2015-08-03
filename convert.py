@@ -5,23 +5,30 @@ from urllib.request import urlopen
 import os
 import traceback
 
-def row_to_dict(header, row):
-    goal = dict()
-    goal["name"] = row[0]
-    goal["jp"] = row[1]
-    difficulty = row[2]
-    goal["child"] = row[3]
+
+IGNORE = object()
+
+SCHEMA = [
+    "name",
+    "jp",
+    "difficulty",
+    "child",
+]
+
+def row_to_dict(synergy_header, row):
+    detail_cols = row[:len(SCHEMA)]
+    synergy_cols = row[len(SCHEMA):]
+
+    goal = {name: detail for name, detail in zip(SCHEMA, detail_cols) if name is not IGNORE}
 
     types = dict()
     subtypes = dict()
-    for index, synergy in enumerate(row[4:]):
-        if synergy != "":
-            type_name = header[index]
-            # a '*' denotes a subtype
+    for synergy_name, synergy in zip(synergy_header, synergy_cols):
+        if synergy:
             if synergy.startswith("*"):
-                subtypes[type_name] = float(synergy[1:])
+                subtypes[synergy_name] = float(synergy[1:])
             else:
-                types[type_name] = float(synergy)
+                types[synergy_name] = float(synergy)
 
     # all goals have types
     goal["types"] = types
@@ -33,7 +40,7 @@ def row_to_dict(header, row):
 
 
 def rows_to_dict(header, rows):
-    header = header[4:]
+    synergy_header = header[len(SCHEMA):]
 
     goals = defaultdict(list)
     goals["info"] = {"version": "v9"}
@@ -41,7 +48,8 @@ def rows_to_dict(header, rows):
     for row in rows:
         try:
             if row[0]:
-                difficulty, goal = row_to_dict(header, row)
+                goal = row_to_dict(synergy_header, row)
+                difficulty = goal.pop("difficulty")
                 goals[difficulty].append(goal)
         except:
             print("exception encountered when processing row: " + str(row))
